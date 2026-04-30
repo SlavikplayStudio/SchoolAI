@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>SchoolAi Release 1.0</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background:#1e1e2f; margin:0; padding:0; color:#fff; }
+    header { background:#4a90e2; padding:20px; text-align:center; font-size:28px; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    main { max-width:1000px; margin:30px auto; background:#2c2c3c; padding:25px; border-radius:12px; box-shadow:0 0 20px rgba(0,0,0,0.5); }
+    h2 { color:#4a90e2; }
+    input, select, button, textarea { width:100%; margin:10px 0; padding:12px; border-radius:8px; border:none; font-size:16px; }
+    input, select, textarea { background:#3a3a4a; color:#fff; }
+    button { background:#4a90e2; color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
+    button:hover { background:#357ab8; transform:scale(1.05); }
+    ul { list-style:none; padding:0; }
+    .hidden { display:none; }
+    .card { background:#3a3a4a; padding:20px; border-radius:10px; margin:15px 0; border-left: 5px solid #4a90e2; position: relative; }
+    .badge { background: #4a90e2; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-right: 10px; }
+    .teacher-badge { background: #e67e22; }
+    .score-badge { background: #2ecc71; float: right; }
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+    .nav-tabs span { cursor: pointer; padding: 10px; border-radius: 5px; }
+    .nav-tabs span.active { background: #4a90e2; }
+    .toggle-link { color: #4a90e2; cursor: pointer; text-decoration: underline; margin-top: 10px; display: block; text-align: center; }
+    .q-block { background: #444; padding: 15px; border-radius: 8px; margin: 10px 0; }
+    .delete-btn { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; float: right; width: auto; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    .btn-red { background: #e74c3c; }
+    .btn-green { background: #2ecc71; }
+    #testRunner { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1e1e2f; z-index: 100; padding: 40px; box-sizing: border-box; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <header>SchoolAi Release 1.0</header>
+  <main>
+    <!-- Реєстрація -->
+    <div id="register">
+      <h2>Реєстрація</h2>
+      <input id="regUsername" placeholder="Username">
+      <input id="regPassword" type="password" placeholder="Password">
+      <select id="regRole" onchange="checkRole()">
+        <option value="" disabled selected>Оберіть роль</option>
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+      </select>
+      <input id="regTeacherKey" type="password" placeholder="Секретний код вчителя" class="hidden">
+      <button onclick="register()">Register</button>
+    </div>
+
+    <!-- Логін -->
+    <div id="login">
+      <h2>Логін</h2>
+      <input id="username" placeholder="Username">
+      <input id="password" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <a class="toggle-link" onclick="toggleForms('register')">Немає акаунту? Зареєструватися</a>
+    </div>
+
+    <!-- Панель -->
+    <div id="dashboard" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="welcome"></h2>
+        <button onclick="logout()" style="width: auto; padding: 5px 15px;" class="btn-red">Вийти</button>
+      </div>
+
+      <div class="nav-tabs">
+        <span id="tabLessons" class="active" onclick="switchTab('lessonsSection')">📚 Уроки</span>
+        <span id="tabTests" onclick="switchTab('testsSection')">📝 Тести</span>
+        <span id="tabResults" onclick="switchTab('resultsSection')">📊 Результати</span>
+      </div>
+
+      <!-- Панель вчителя -->
+      <div id="teacherPanel" class="hidden">
+        <div class="grid">
+          <div class="card">
+            <h3>➕ Новий урок</h3>
+            <select id="lessonSubject">
+                <option value="Музичне мистецтво">Музичне мистецтво</option>
+                <option value="Образотворче мистецтво">Образотворче мистецтво</option>
+                <option value="Мистецтво (інтегрований курс)">Мистецтво (інтегрований курс)</option>
+                <option value="Математика (алгебра, геометрія)">Математика (алгебра, геометрія)</option>
+                <option value="Інформатика">Інформатика</option>
+                <option value="Фізика">Фізика</option>
+                <option value="Хімія">Хімія</option>
+                <option value="Біологія">Біологія</option>
+                <option value="Географія">Географія</option>
+                <option value="Українська мова">Українська мова</option>
+                <option value="Українська література">Українська література</option>
+                <option value="Іноземна мова">Іноземна мова (англійська, німецька, французька тощо)</option>
+                <option value="Зарубіжна література">Зарубіжна література</option>
+                <option value="Історія України">Історія України</option>
+                <option value="Пізнаємо природу">Пізнаємо природу</option>
+                <option value="Здоров'я безпека та добробут">Здоров'я безпека та добробут</option>
+            </select>
+            <input id="lessonTitle" placeholder="Назва уроку">
+            <textarea id="lessonContent" style="height: 100px;" placeholder="Зміст уроку..."></textarea>
+            <button class="btn-green" onclick="createLesson()">Опублікувати урок</button>
+          </div>
+          <div class="card">
+            <h3>➕ Новий тест</h3>
+            <input id="testTitle" placeholder="Назва тесту (напр. Контрольна №1)">
+            <p style="font-size: 12px; color: #aaa;">Формат: Питання | Відповідь. Одне питання на рядок.</p>
+            <textarea id="testQuestionsRaw" style="height: 100px;" placeholder="Скільки буде 2+2? | 4&#10;Хто такий Т. Шевченко? | Поет"></textarea>
+            <button class="btn-green" onclick="createTest()">Створити тест</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="lessonsSection">
+        <h3>Бібліотека уроків</h3>
+        <ul id="lessons"></ul>
+      </div>
+
+      <div id="testsSection" class="hidden">
+        <h3>Доступні тести</h3>
+        <ul id="tests"></ul>
+      </div>
+
+      <div id="resultsSection" class="hidden">
+        <h3>Журнал успішності</h3>
+        <ul id="results"></ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Інтерфейс проходження тесту -->
+  <div id="testRunner" class="hidden">
+    <h1 id="runTestTitle">Назва тесту</h1>
+    <hr>
+    <div id="runTestContent"></div>
+    <button class="btn-green" onclick="finishTest()">Завершити тест</button>
+    <button class="btn-red" onclick="closeTest()">Скасувати</button>
+  </div>
+
+  <script>
+    // 1. Оголошуємо змінні стану на самому початку, щоб уникнути ReferenceError
+    let currentUser = null;
+    let activeTest = null;
+
+    // 2. Ініціалізуємо дані з localStorage, переконуючись, що вони є масивами
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (!Array.isArray(users)) {
+        console.warn("Дані 'users' у LocalStorage пошкоджені або не є масивом. Переініціалізація.");
+        users = [];
+        saveData(); // Зберігаємо порожній масив, щоб виправити дані
+    }
+    let lessons = JSON.parse(localStorage.getItem("lessons") || "[]");
+    if (!Array.isArray(lessons)) {
+        console.warn("Дані 'lessons' у LocalStorage пошкоджені або не є масивом. Переініціалізація.");
+        lessons = [];
+        saveData();
+    }
+    let tests = JSON.parse(localStorage.getItem("tests") || "[]");
+    if (!Array.isArray(tests)) {
+        console.warn("Дані 'tests' у LocalStorage пошкоджені або не є масивом. Переініціалізація.");
+        tests = [];
+        saveData();
+    }
+    let results = JSON.parse(localStorage.getItem("results") || "[]");
+    if (!Array.isArray(results)) {
+        console.warn("Дані 'results' у LocalStorage пошкоджені або не є масивом. Переініціалізація.");
+        results = [];
+        saveData();
+    }
+
+    // Спеціальний акаунт адміна для тебе
+    if (!users.find(u => u.username === "admin")) {
+        users.push({username: "admin", password: "AdminSecurePass!2024", role: "admin"}); // Змінити пароль на більш безпечний
+        saveData();
+    }
+
+    // --- КОМАНДА ДЛЯ АДМІНА ---
+    // Щоб додати вчителя: натисніть F12 -> Console і введіть:
+    // addTeacher("логін", "пароль")
+    window.addTeacher = function(u, p) {
+        if(users.find(x => x.username === u)) {
+            console.error("Користувач вже існує!");
+            return "Помилка: нік зайнятий";
+        }
+        users.push({username: u, password: p, role: 'teacher'});
+        saveData();
+        return `Вчителя ${u} успішно додано! Тепер він може увійти.`;
+    };
+
+    // Перевірка ролі для відображення поля секретного коду
+    function checkRole() {
+        const role = document.getElementById("regRole").value;
+        const keyField = document.getElementById("regTeacherKey");
+        if (role === "teacher") {
+            keyField.classList.remove('hidden');
+        } else {
+            keyField.classList.add('hidden');
+        }
+    }
+
+    // Function to toggle between login and register forms
+    function toggleForms(formToShow) {
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('register').classList.add('hidden');
+        document.getElementById(formToShow).classList.remove('hidden');
+    }
+
+    function switchTab(tabId) {
+        ['lessonsSection', 'testsSection', 'resultsSection'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        ['tabLessons', 'tabTests', 'tabResults'].forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+        document.getElementById('tab' + tabId.replace('Section', '').charAt(0).toUpperCase() + tabId.replace('Section', '').slice(1)).classList.add('active');
+    }
+
+    function saveData() {
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem("lessons", JSON.stringify(lessons));
+      localStorage.setItem("tests", JSON.stringify(tests));
+      localStorage.setItem("results", JSON.stringify(results));
+    }
+
+    function register() {
+      const u = document.getElementById("regUsername").value.trim();
+      const p = document.getElementById("regPassword").value.trim();
+      const r = document.getElementById("regRole").value;
+
+      if (!u) {
+        alert("Будь ласка, введіть ім'я користувача!");
+        return;
+      }
+      if (!p) {
+        alert("Будь ласка, введіть пароль!");
+        return;
+      }
+      if (r === "") { // Перевірка, що роль обрана
+        alert("Будь ласка, оберіть роль (Учень або Вчитель)!");
+        return;
+      }
+
+      if (r === "teacher") {
+        const teacherKey = document.getElementById("regTeacherKey").value;
+        if (!teacherKey) {
+          alert("Будь ласка, введіть секретний код!");
+          return;
+        }
+
+        // Посилання на Viber (замініть +380000000000 на свій номер)
+        const viberLink = `viber://chat?number=+380679960914`; 
+
+        // Змінюємо інтерфейс реєстрації на повідомлення для адміна
+        document.getElementById("register").innerHTML = `
+          <div class="card" style="text-align: center; border-left-color: #7360f2;">
+            <h2 style="color: #7360f2;">Заявка на реєстрацію</h2>
+            <p style="font-size: 18px; margin: 20px 0;">Напишіть що це ви, адміну.</p>
+            <p style="background: #2c2c3c; padding: 10px; border-radius: 5px; font-size: 14px;">
+              Ваші дані для відправки:<br>
+              <b>Логін:</b> ${u} | <b>Пароль:</b> ${p} | <b>Код:</b> ${teacherKey}
+            </p>
+            <a href="${viberLink}" class="toggle-link" style="font-size: 20px; color: #fff; background: #7360f2; padding: 15px; border-radius: 10px; display: block; text-decoration: none; margin: 20px 0;">
+               📩 Написати в Viber
+            </a>
+            <button onclick="location.reload()" style="background: #444; width: auto;">Повернутися назад</button>
+          </div>
+        `;
+        return; // Зупиняємо звичайну реєстрацію
+      }
+
+      if(users.find(x=>x.username===u)){
+        alert("Користувач з таким ім'ям вже існує! Спробуйте інше.");
+          return;
+      }
+
+      users.push({username:u, password:p, role:r});
+      saveData();
+      alert("Реєстрація успішна! Тепер залогінься.");
+      toggleForms('login'); // Show login form after successful registration
+      document.getElementById("regUsername").value = ''; // Clear registration fields
+      document.getElementById("regPassword").value = '';
+      document.getElementById("regRole").value = ''; // Reset role selection
+      document.getElementById("regTeacherKey").classList.add('hidden');
+      document.getElementById("regTeacherKey").value = '';
+    }
+
+    // Функція виходу без перезавантаження сторінки (щоб уникнути помилок origin)
+    function logout() {
+        currentUser = null;
+        document.getElementById("dashboard").classList.add("hidden");
+        document.getElementById("login").classList.remove("hidden");
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("teacherPanel").classList.add("hidden");
+    }
+
+    function login() {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      const user = users.find(x => x.username===u && x.password===p);
+      if(user){
+        currentUser = user;
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("register").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("welcome").textContent = "Вітаємо, " + user.username;
+        if(user.role==="teacher" || user.role === "admin"){
+          document.getElementById("teacherPanel").classList.remove("hidden");
+        }
+        refreshAll();
+      } else {
+        alert("Неправильний логін або пароль!");
+      }
+    }
+
+    function createLesson() {
+      const title = document.getElementById("lessonTitle").value.trim();
+      const content = document.getElementById("lessonContent").value.trim();
+      const subject = document.getElementById("lessonSubject").value;
+      if(!title || !content){ alert("Заповни всі поля уроку!"); return; }
+      lessons.push({title, content, subject, teacher: currentUser.username, date: new Date().toLocaleDateString()});
+      saveData();
+      document.getElementById("lessonTitle").value = ''; // Clear fields after creation
+      document.getElementById("lessonContent").value = '';
+      alert("Урок опубліковано!");
+      getLessons(); 
+    }
+
+    function refreshAll() {
+        getLessons();
+        showTests();
+        showResults();
+    }
+
+    function getLessons() {
+      const list = document.getElementById("lessons");
+      list.innerHTML="";
+      lessons.forEach(l=>{
+        const isOwner = currentUser && (l.teacher === currentUser.username || currentUser.role === 'admin');
+        const div=document.createElement("div");
+        div.className = "card";
+        div.innerHTML=`
+                       ${isOwner ? `<button class="delete-btn" onclick="deleteItem('lessons', '${l.title}')">🗑️ Видалити</button>` : ''}
+                       <span class="badge">${l.subject}</span> <b>${l.title}</b> 
+                       <p style="color: #ccc; font-size: 14px;">${l.content}</p>
+                       <small>Викладач: ${l.teacher} | ${l.date}</small>`;
+        list.appendChild(div);
+      });
+    }
+
+    function deleteItem(type, title) {
+        if (!confirm(`Ви впевнені, що хочете видалити "${title}"?`)) return;
+        if (type === 'lessons') lessons = lessons.filter(x => x.title !== title);
+        if (type === 'tests') tests = tests.filter(x => x.title !== title);
+        saveData();
+        refreshAll();
+    }
+
+    function createTest() {
+      const title = document.getElementById("testTitle").value.trim();
+      const raw = document.getElementById("testQuestionsRaw").value.trim();
+      if(!title || !raw){ alert("Заповни дані тесту!"); return; }
+      
+      const questions = raw.split('\n')
+          .filter(line => line.trim() !== '') // Фільтруємо порожні рядки
+          .map(line => {
+              const parts = line.split('|');
+              // Перевіряємо, чи існують частини, перш ніж викликати trim()
+              let q = parts[0] ? parts[0].trim() : '';
+              let a = parts[1] ? parts[1].trim() : '';
+              return { q: q, a: a };
+      });
+
+      tests.push({title, questions, teacher: currentUser.username});
+      saveData();
+      document.getElementById("testTitle").value = '';
+      document.getElementById("testQuestionsRaw").value = '';
+      alert("Тест створено!");
+      showTests();
+    }
+
+    function showTests() {
+      const list = document.getElementById("tests");
+      list.innerHTML="";
+      tests.forEach((t,i)=>{
+        const alreadySubmitted = results.some(r => r.student === currentUser.username && r.test === t.title);
+        const isOwner = currentUser && (t.teacher === currentUser.username || currentUser.role === 'admin');
+        const div=document.createElement("div");
+        div.className = "card";
+        if (alreadySubmitted && currentUser.role !== 'admin') {
+            div.innerHTML=`<b>${t.title}</b> <span class="badge score-badge">Завершено</span><br>
+                           <small>Автор: ${t.teacher}</small>`;
+        } else {
+            div.innerHTML=`
+              ${isOwner ? `<button class="delete-btn" onclick="deleteItem('tests', '${t.title}')">🗑️ Видалити</button>` : ''}
+              <b>${t.title}</b><br>
+              <small>Питань: ${t.questions.length} | Автор: ${t.teacher}</small>
+              <button onclick="runTest(${i})" style="margin-top:10px">Почати тест</button>`;
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function runTest(index) {
+        activeTest = { ...tests[index], index };
+        document.getElementById("runTestTitle").textContent = activeTest.title;
+        const container = document.getElementById("runTestContent");
+        container.innerHTML = "";
+        
+        activeTest.questions.forEach((q, qIdx) => {
+            const qDiv = document.createElement("div");
+            qDiv.className = "q-block";
+            qDiv.innerHTML = `<p><b>Питання ${qIdx+1}:</b> ${q.q}</p>
+                              <input id="runAns${qIdx}" placeholder="Ваша відповідь">`;
+            container.appendChild(qDiv);
+        });
+        
+        document.getElementById("testRunner").classList.remove("hidden");
+    }
+
+    function finishTest() {
+        let score = 0;
+        activeTest.questions.forEach((q, qIdx) => {
+            const userAns = document.getElementById(`runAns${qIdx}`).value.trim().toLowerCase();
+            if(userAns === q.a.toLowerCase()) score++;
+        });
+
+        results.push({
+            student: currentUser.username, 
+            test: activeTest.title, 
+            score: `${score}/${activeTest.questions.length}`,
+            percent: Math.round((score/activeTest.questions.length)*100)
+        });
+
+        saveData();
+        alert(`Тест завершено! Ваш результат: ${score}/${activeTest.questions.length}`);
+        closeTest();
+        refreshAll();
+    }
+
+    function closeTest() {
+        document.getElementById("testRunner").classList.add("hidden");
+        activeTest = null;
+    }
+
+    function showResults() {
+      const list=document.getElementById("results");
+      list.innerHTML="";
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      const isTeacher = currentUser && currentUser.role === 'teacher';
+      
+      const filteredResults = (isTeacher || isAdmin) ? results : results.filter(r => r.student === currentUser.username);
+
+      if (filteredResults.length === 0) {
+          list.innerHTML = "<li>Журнал порожній</li>";
+          return;
+      }
+
+      filteredResults.forEach((r, index)=>{
+        const div=document.createElement("div");
+        div.className = "card";
+        div.innerHTML=`
+                       ${isAdmin ? `<button class="delete-btn" onclick="deleteResult(${index})">🗑️</button>` : ''}
+                       <span class="badge score-badge">${r.percent}%</span>
+                       <b>${r.student}</b> пройшов тест <b>"${r.test}"</b><br>
+                       <small>Результат: ${r.score} правильних відповідей</small>`;
+        list.appendChild(div);
+      });
+    }
+
+    function deleteResult(index) {
+        if (!confirm("Видалити цей результат із журналу?")) return;
+        results.splice(index, 1);
+        saveData();
+        showResults();
+    }
+  </script>
+</body>
+</html>
